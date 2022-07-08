@@ -1,0 +1,13 @@
+{
+    "scripts": {
+        "start": "node ./1/main.js modulo",
+        "dev" : "nodemon ./5/T.js",
+        "modulo" : "node ./1/main.js modulo",
+        "matrix" : "node ./1/main.js matrix",
+        "buddySystem" : "node ./3/buddySystem.js 20",
+        "cuaternarios": "python ./4/main.py",
+        "diagramasT" : "node ./5/T.js"
+    },
+    "type": "module"
+
+}
