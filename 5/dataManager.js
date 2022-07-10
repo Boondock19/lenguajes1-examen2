@@ -267,7 +267,25 @@ let describirInfoStructNotPacked = (types) => {
             bytesLibres :4,
             bytesOcupados :0,
         }
+
+        /* 
+            Con el numero de la memorio, podemos saber si se pueden
+            ingresar los datos por la alineacion con la operacion
+            linea mod alineacion, si es 0, entonces se puede ingresar
+            en caso contrario debemos agregar una linea en blanco
+        */
         memoryLine.numero += memory.length * 4
+        let ingresoPermitido = memoryLine.numero % typeInfo.alineacion
+        while (ingresoPermitido != 0) {
+            memory.push(memoryLine)
+            memoryLine = {
+                numero:0,
+                bytesLibres :4,
+                bytesOcupados :0,
+            }
+            memoryLine.numero += memory.length * 4
+            ingresoPermitido = memoryLine.numero % typeInfo.alineacion
+        }
         /* 
             Si el mod da 0, entonces todos los espacios fueron ocupados
             caso contrario, fueron ocupados menos de 4 bytes y por def
