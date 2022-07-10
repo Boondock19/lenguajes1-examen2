@@ -134,6 +134,8 @@ process.stdin.on('data', data => {
                     arrayOfTypes
                 }
 
+                getUnionInfo(newUnion)
+
                 arrayOfUnions.push(newUnion)
             }
             
@@ -142,7 +144,53 @@ process.stdin.on('data', data => {
         console.log(dataArray)
         console.log(arrayOfUnions)
     }
-        
+
+    /* 
+        Registros son structs
+        y registros variante son los Unions
+    */
+    
+    if (dataArray[0] == "DESCRIBIR") {
+        console.log("ENTRA EN DESCRIBIR")
+        if (dataArray.length < 2) { 
+            console.log("ERROR: Faltan datos")
+        } else {
+            let name = dataArray[1].trim()
+            let filteredName = arrayOfAtomics.filter (atomic => atomic.name == name)
+            let filteredNameStruct = arrayOfStructs.filter (struct => struct.name == name)
+            let filteredNameUnion = arrayOfUnions.filter (union => union.name == name) 
+            
+            // console.log(filteredName)
+            // console.log(filteredNameStruct)
+            // console.log(filteredNameUnion)
+            
+            // Si no esta en ninguna de las listas anteriores, entonces no existe
+            if (filteredName.length == 0 && filteredNameStruct.length == 0 && filteredNameUnion.length == 0) { 
+                
+                console.log("ERROR: El nombre no existe")
+            } else {
+                let currentType;
+                let isStruct = false
+                // Si existe en una de las listas, entonces lo mostramos
+                if (filteredName.length > 0) { 
+                   currentType = filteredName
+                } else if (filteredNameStruct.length > 0) { 
+                    currentType = filteredNameStruct
+                    isStruct = true
+                } else if (filteredNameUnion.length > 0) { 
+                    currentType =filteredNameUnion
+                }
+
+                console.log(currentType)
+                if (isStruct == false) {
+                    console.log(describirInfoPacked(currentType))
+                } else {
+                    // f
+                }
+
+            }
+        }
+    }
     console.log("Siguiente accion: ")
 
     // Salimos del programa
@@ -171,4 +219,32 @@ let findOne = (names,array) => {
    
 
     return true
+}
+
+let getTypeInfo = (type) => {
+    let typeInstance = arrayOfAtomics.find(element => element.name == type)
+    return typeInstance
+}
+
+let getUnionInfo = (union) => {
+    let max = 0
+    let maxRepresentation = 0 
+    union.arrayOfTypes.forEach(type => {
+        let typeInfo = getTypeInfo(type)
+        if (typeInfo.alineacion > max) {
+            max = typeInfo.alineacion
+            maxRepresentation = typeInfo.representation
+        }
+    })
+    union.alineacion = max
+    union.representation = maxRepresentation
+}
+
+let describirInfoPacked = (types) => {
+    let type = types[0]
+    let alineacion = type.alineacion
+    let representation = type.representation
+    let desperdicio = 0
+
+    return `El tipo ${type.name} tiene ${alineacion} , ocupa ${representation} con desperdicio ${desperdicio}`
 }
