@@ -30,8 +30,8 @@ process.stdin.on('data', data => {
             console.log("ERROR: Faltan datos")
         } else {
             let name = dataArray[1]
-            let representation = dataArray[2]
-            let alineacion = dataArray[3].trim()
+            let representation = parseInt(dataArray[2])
+            let alineacion = parseInt(dataArray[3].trim())
 
             const filteredName = arrayOfAtomics.filter (atomic => atomic.name == name) 
             if (filteredName.length > 0) { 
@@ -40,7 +40,9 @@ process.stdin.on('data', data => {
                 let newAtomic = {
                     name,
                     representation,
-                    alineacion
+                    alineacion,
+                    spaceUsed: 0,
+                    remainder:representation
                 }
 
                 arrayOfAtomics.push(newAtomic)
@@ -185,7 +187,10 @@ process.stdin.on('data', data => {
                 if (isStruct == false) {
                     console.log(describirInfoPacked(currentType))
                 } else {
-                    // f
+                    
+                    // Primero info no empaquetacada
+                    console.log(describirInfoStructNotPacked(currentType))
+
                 }
 
             }
@@ -247,4 +252,112 @@ let describirInfoPacked = (types) => {
     let desperdicio = 0
 
     return `El tipo ${type.name} tiene ${alineacion} , ocupa ${representation} con desperdicio ${desperdicio}`
+}
+
+
+let describirInfoStructNotPacked = (types) => {
+    let type = types[0]
+    let arrayOfTypes = type.arrayOfTypes
+    let memory = []
+
+    arrayOfTypes.forEach(type => {
+        let typeInfo = getTypeInfo(type)
+        let memoryLine = {
+            numero:0,
+            bytesLibres :4,
+            bytesOcupados :0,
+        }
+        memoryLine.numero += memory.length * 4
+        /* 
+            Si el mod da 0, entonces todos los espacios fueron ocupados
+            caso contrario, fueron ocupados menos de 4 bytes y por def
+            de mod sabremos cuantos bytes fueron ocupados
+        */
+        let bytesOcupadosCalculo = (typeInfo.representation % 4 == 0) ? 4 : typeInfo.representation % 4  
+        memoryLine.bytesOcupados += bytesOcupadosCalculo
+        memoryLine.bytesLibres -= typeInfo.representation
+        
+        /* 
+            Bytes libres no puede ser menor que 0, en caso de 
+            que lo sea entonces el valor absoluto de esa cantidad
+            es lo que falta por colocar en otra linea de ese tipo
+            por lo tanto en remainder del tipo se guarda esa cantidad
+            de manera posisitiva y en spacedUsed se guarda el remainder -
+            los bytes que faltan por colocar en otra linea de ese tipo
+        */
+        if (memoryLine.bytesLibres < 0) {
+            typeInfo.spaceUsed = typeInfo.remainder - memoryLine.bytesLibres * -1
+            typeInfo.remainder = memoryLine.bytesLibres * -1
+            memoryLine.bytesLibres = 0
+            
+            memory.push(memoryLine)
+            
+            let adicionalMemoryLine = {
+                numero:0,
+                bytesLibres :4,
+                bytesOcupados :0,
+            }
+            
+            adicionalMemoryLine.numero += memory.length * 4
+            let bytesOcupadosCalculo = (typeInfo.representation % 4 == 0) ? 4 : typeInfo.representation % 4  
+            adicionalMemoryLine.bytesOcupados += bytesOcupadosCalculo
+           // adicionalMemoryLine.bytesOcupados += typeInfo.remainder
+            adicionalMemoryLine.bytesLibres -= typeInfo.remainder
+
+
+            // memory.push(adicionalMemoryLine)
+
+            console.log("Fuera del while",typeInfo)
+
+            while (adicionalMemoryLine.bytesLibres < 0) {
+                typeInfo.spaceUsed = typeInfo.remainder - adicionalMemoryLine.bytesLibres * -1
+                typeInfo.remainder = adicionalMemoryLine.bytesLibres * -1
+                adicionalMemoryLine.bytesLibres = 0
+                
+                console.log("Dentro del while",typeInfo)
+                memory.push(adicionalMemoryLine)
+                
+                adicionalMemoryLine = {
+                    numero:0,
+                    bytesLibres :4,
+                    bytesOcupados :0,
+                }
+                
+                adicionalMemoryLine.numero += memory.length * 4
+                let bytesOcupadosCalculo = (typeInfo.representation % 4 == 0) ? 4 : typeInfo.representation % 4  
+                adicionalMemoryLine.bytesOcupados += bytesOcupadosCalculo
+                // adicionalMemoryLine.bytesOcupados += typeInfo.remainder
+                adicionalMemoryLine.bytesLibres -= typeInfo.remainder
+    
+    
+                memory.push(adicionalMemoryLine)
+            }
+
+        } else {
+            memory.push(memoryLine)
+        }
+        
+    })
+
+    console.log("memoria luego del for : ", memory)
+    
+    let [usedSpace,freeSpace] = getMemoryInfo(memory)
+    
+    let salida = `El tipo ${type.name} ocupa ${usedSpace} con desperdicio de ${freeSpace} bytes`
+
+    return salida
+    
+}
+
+let getMemoryInfo = (memory) => {
+    let usedSpace = 0
+    let freeSpace = 0
+    memory.forEach(line => {
+        usedSpace += line.bytesOcupados
+        freeSpace += line.bytesLibres
+     
+    })
+
+    return [usedSpace,freeSpace]
+
 }
