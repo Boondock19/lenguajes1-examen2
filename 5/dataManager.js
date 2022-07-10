@@ -188,9 +188,11 @@ process.stdin.on('data', data => {
                     console.log(describirInfoPacked(currentType))
                 } else {
                     
-                    // Primero info no empaquetacada
+                    // Primero info empaquetacada
+                    
+                    console.log(describirInfoStructPacked(currentType))
                     console.log(describirInfoStructNotPacked(currentType))
-
+                    
                 }
 
             }
@@ -255,7 +257,7 @@ let describirInfoPacked = (types) => {
 }
 
 
-let describirInfoStructNotPacked = (types) => {
+let describirInfoStructPacked = (types) => {
     let type = types[0]
     let arrayOfTypes = type.arrayOfTypes
     let memory = []
@@ -266,6 +268,7 @@ let describirInfoStructNotPacked = (types) => {
             numero:0,
             bytesLibres :4,
             bytesOcupados :0,
+            ocupacion: 4
         }
 
         /* 
@@ -282,6 +285,7 @@ let describirInfoStructNotPacked = (types) => {
                 numero:0,
                 bytesLibres :4,
                 bytesOcupados :0,
+                ocupacion:4,
             }
             memoryLine.numero += memory.length * 4
             ingresoPermitido = memoryLine.numero % typeInfo.alineacion
@@ -291,6 +295,7 @@ let describirInfoStructNotPacked = (types) => {
             caso contrario, fueron ocupados menos de 4 bytes y por def
             de mod sabremos cuantos bytes fueron ocupados
         */
+       
         let bytesOcupadosCalculo = (typeInfo.representation % 4 == 0) ? 4 : typeInfo.representation % 4  
         memoryLine.bytesOcupados += bytesOcupadosCalculo
         memoryLine.bytesLibres -= typeInfo.representation
@@ -314,6 +319,7 @@ let describirInfoStructNotPacked = (types) => {
                 numero:0,
                 bytesLibres :4,
                 bytesOcupados :0,
+                ocupacion:4,
             }
             
             adicionalMemoryLine.numero += memory.length * 4
@@ -322,10 +328,12 @@ let describirInfoStructNotPacked = (types) => {
            // adicionalMemoryLine.bytesOcupados += typeInfo.remainder
             adicionalMemoryLine.bytesLibres -= typeInfo.remainder
 
-
-            // memory.push(adicionalMemoryLine)
-
+            if (adicionalMemoryLine.bytesLibres >= 0) {
+                memory.push(adicionalMemoryLine)
+            }
+             
             console.log("Fuera del while",typeInfo)
+            console.log("Fuera del while adicional memory",adicionalMemoryLine)
 
             while (adicionalMemoryLine.bytesLibres < 0) {
                 typeInfo.spaceUsed = typeInfo.remainder - adicionalMemoryLine.bytesLibres * -1
@@ -339,6 +347,7 @@ let describirInfoStructNotPacked = (types) => {
                     numero:0,
                     bytesLibres :4,
                     bytesOcupados :0,
+                    ocupacion:4,
                 }
                 
                 adicionalMemoryLine.numero += memory.length * 4
@@ -357,11 +366,19 @@ let describirInfoStructNotPacked = (types) => {
         
     })
 
+    /* 
+        Colocamos los bytes libres de la ultima linea a 0 para que no sean considerados
+        en el calculo de la ocupacion total. Y colocamos la ocupacion de la ultima linea
+        igual a los bytes ocupados.
+    */
+    memory[memory.length - 1].bytesLibres = 0
+    memory[memory.length - 1].ocupacion =  memory[memory.length - 1].bytesOcupados
+
     console.log("memoria luego del for : ", memory)
     
     let [usedSpace,freeSpace] = getMemoryInfo(memory)
     
-    let salida = `El tipo ${type.name} ocupa ${usedSpace} con desperdicio de ${freeSpace} bytes`
+    let salida = `El tipo ${type.name} ocupa ${usedSpace} con desperdicio de ${freeSpace} bytes con registro empaquetado`
 
     return salida
     
@@ -371,11 +388,34 @@ let getMemoryInfo = (memory) => {
     let usedSpace = 0
     let freeSpace = 0
     memory.forEach(line => {
-        usedSpace += line.bytesOcupados
+        usedSpace += line.ocupacion
         freeSpace += line.bytesLibres
      
     })
 
     return [usedSpace,freeSpace]
 
+}
+
+let describirInfoStructNotPacked = (types) => {
+    /* 
+        El desperdicio siempre sera 0 en no empaquetado
+        y para el espacio ocupado podemos sumar la representacion
+        de cada item del array de tipos
+    */
+    
+    let type = types[0]
+    let arrayOfTypes = type.arrayOfTypes
+    let usedSpace = 0
+    let freeSpace = 0
+    arrayOfTypes.forEach(type => {
+        let typeInfo = getTypeInfo(type)
+        usedSpace += typeInfo.representation         
+    })
+
+    
+    let salida = `El tipo ${type.name} ocupa ${usedSpace} con desperdicio de ${freeSpace} bytes con registros sin empaquetar`
+
+    return salida
+    
 }
