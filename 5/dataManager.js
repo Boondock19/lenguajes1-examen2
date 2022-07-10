@@ -25,8 +25,7 @@ process.stdin.on('data', data => {
         Creacion de tipos atomicos
     */
     if(dataArray[0] == "ATOMICO") {
-        console.log("ENTRO EN ATOMICO")
-        if (dataArray.length < 3) { 
+        if (dataArray.length < 4) { 
             console.log("ERROR: Faltan datos")
         } else {
             let name = dataArray[1]
@@ -49,8 +48,6 @@ process.stdin.on('data', data => {
             }
         }
         
-        console.log(dataArray)
-        console.log(arrayOfAtomics)
     }
         
     
@@ -62,7 +59,6 @@ process.stdin.on('data', data => {
         Creacion de structs
     */
     if(dataArray[0] == "STRUCT") {
-        console.log("ENTRA EN STRUCT")
 
         if (dataArray.length < 3) { 
             console.log("ERROR: Faltan datos")
@@ -70,12 +66,10 @@ process.stdin.on('data', data => {
             let name = dataArray[1]
             let arrayOfTypes = dataArray.slice(2)
             arrayOfTypes[arrayOfTypes.length-1] = arrayOfTypes[arrayOfTypes.length-1].trim()
-            console.log(arrayOfTypes)
             const filteredName = arrayOfStructs.filter (struct => struct.name == name) 
             // Buscamos el nombre en los tipos, si existe no lo permitimos
             let flagTypeName = findOne([name],arrayOfAtomics)
             let flag = findOne(arrayOfTypes,arrayOfAtomics)
-            console.log(flag)
             if (filteredName.length > 0) { 
                 console.log("ERROR: El nombre ya existe")
 
@@ -96,9 +90,6 @@ process.stdin.on('data', data => {
             
         }
 
-        console.log(dataArray)
-        console.log(arrayOfStructs)
-
     }
 
 
@@ -106,7 +97,6 @@ process.stdin.on('data', data => {
         Creacion de unions
     */
     if(dataArray[0] == "UNION") {
-        console.log("ENTRA EN UNION")
 
         if (dataArray.length < 3) { 
             console.log("ERROR: Faltan datos")
@@ -114,13 +104,12 @@ process.stdin.on('data', data => {
             let name = dataArray[1]
             let arrayOfTypes = dataArray.slice(2)
             arrayOfTypes[arrayOfTypes.length-1] = arrayOfTypes[arrayOfTypes.length-1].trim()
-            console.log(arrayOfTypes)
+            
             
             const filteredName = arrayOfUnions.filter (union => union.name == name) 
             // Buscamos el nombre en los tipos, si existe no lo permitimos
             let flagTypeName = findOne([name],arrayOfAtomics)
             let flag = findOne(arrayOfTypes,arrayOfAtomics)
-            console.log(flag)
             if (filteredName.length > 0) { 
                 console.log("ERROR: El nombre ya existe")
 
@@ -142,9 +131,6 @@ process.stdin.on('data', data => {
             }
             
         }
-
-        console.log(dataArray)
-        console.log(arrayOfUnions)
     }
 
     /* 
@@ -153,7 +139,6 @@ process.stdin.on('data', data => {
     */
     
     if (dataArray[0] == "DESCRIBIR") {
-        console.log("ENTRA EN DESCRIBIR")
         if (dataArray.length < 2) { 
             console.log("ERROR: Faltan datos")
         } else {
@@ -161,11 +146,7 @@ process.stdin.on('data', data => {
             let filteredName = arrayOfAtomics.filter (atomic => atomic.name == name)
             let filteredNameStruct = arrayOfStructs.filter (struct => struct.name == name)
             let filteredNameUnion = arrayOfUnions.filter (union => union.name == name) 
-            
-            // console.log(filteredName)
-            // console.log(filteredNameStruct)
-            // console.log(filteredNameUnion)
-            
+                       
             // Si no esta en ninguna de las listas anteriores, entonces no existe
             if (filteredName.length == 0 && filteredNameStruct.length == 0 && filteredNameUnion.length == 0) { 
                 
@@ -183,9 +164,9 @@ process.stdin.on('data', data => {
                     currentType =filteredNameUnion
                 }
 
-                console.log(currentType)
+                
                 if (isStruct == false) {
-                    console.log(describirInfoPacked(currentType))
+                    console.log(describirInfo(currentType))
                 } else {
                     
                     // Primero info empaquetacada
@@ -228,10 +209,24 @@ let findOne = (names,array) => {
     return true
 }
 
+/**
+ * 
+ * @param {nombre de tipo en atomicos} type 
+ * @returns instacia de tipo atomico
+ */
+
 let getTypeInfo = (type) => {
     let typeInstance = arrayOfAtomics.find(element => element.name == type)
     return typeInstance
 }
+
+/**
+ * 
+ * @param {instancia de un union} union 
+ * 
+ * Funcion utulizada para obtener la informacion de un union
+ * es decir, saber cual es su mayor tamaño y alineacion.
+ */
 
 let getUnionInfo = (union) => {
     let max = 0
@@ -247,15 +242,32 @@ let getUnionInfo = (union) => {
     union.representation = maxRepresentation
 }
 
-let describirInfoPacked = (types) => {
+/**
+ * Obtiene la informacion de un tipo de tipo distinto
+ * a struct para poder desplegarla en la pantalla.
+ * La informacion en caso de tipos atomicos y union
+ * es igual para empaquetados o no empaquetados.
+ * 
+ * @param {tipo atomico o union} types 
+ * @returns String con la informacion.
+ */
+
+let describirInfo = (types) => {
     let type = types[0]
     let alineacion = type.alineacion
     let representation = type.representation
     let desperdicio = 0
 
-    return `El tipo ${type.name} tiene ${alineacion} , ocupa ${representation} con desperdicio ${desperdicio}`
+    return `El tipo ${type.name} tiene alineacion ${alineacion} , ocupa ${representation} con desperdicio ${desperdicio}`
 }
 
+
+/**
+ * 
+ * @param {instancia de un struct} types 
+ * @returns String con informacion del struct
+ * en el caso de que sea empaquetado.
+ */
 
 let describirInfoStructPacked = (types) => {
     let type = types[0]
@@ -332,15 +344,13 @@ let describirInfoStructPacked = (types) => {
                 memory.push(adicionalMemoryLine)
             }
              
-            console.log("Fuera del while",typeInfo)
-            console.log("Fuera del while adicional memory",adicionalMemoryLine)
 
             while (adicionalMemoryLine.bytesLibres < 0) {
                 typeInfo.spaceUsed = typeInfo.remainder - adicionalMemoryLine.bytesLibres * -1
                 typeInfo.remainder = adicionalMemoryLine.bytesLibres * -1
                 adicionalMemoryLine.bytesLibres = 0
                 
-                console.log("Dentro del while",typeInfo)
+                
                 memory.push(adicionalMemoryLine)
                 
                 adicionalMemoryLine = {
@@ -374,7 +384,6 @@ let describirInfoStructPacked = (types) => {
     memory[memory.length - 1].bytesLibres = 0
     memory[memory.length - 1].ocupacion =  memory[memory.length - 1].bytesOcupados
 
-    console.log("memoria luego del for : ", memory)
     
     let [usedSpace,freeSpace] = getMemoryInfo(memory)
     
@@ -383,6 +392,12 @@ let describirInfoStructPacked = (types) => {
     return salida
     
 }
+
+/**
+ * 
+ * @param {Array que representa una memoria} memory 
+ * @returns el espacio usado y el libre la struct
+ */
 
 let getMemoryInfo = (memory) => {
     let usedSpace = 0
@@ -396,6 +411,13 @@ let getMemoryInfo = (memory) => {
     return [usedSpace,freeSpace]
 
 }
+
+/**
+ * 
+ * @param {instancia de un struct} types 
+ * @returns Un string que representa la informacion del struct
+ * en caso de que no sea empaquetado.
+ */
 
 let describirInfoStructNotPacked = (types) => {
     /* 
