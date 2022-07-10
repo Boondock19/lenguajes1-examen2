@@ -133,10 +133,7 @@ process.stdin.on('data', data => {
         }
     }
 
-    /* 
-        Registros son structs
-        y registros variante son los Unions
-    */
+   
     
     if (dataArray[0] == "DESCRIBIR") {
         if (dataArray.length < 2) { 
