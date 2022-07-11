@@ -1,11 +1,8 @@
 {
     "scripts": {
-        "start": "node ./1/main.js modulo",
+        "start": " go run ./1/churchNumbers.go",
         "dev" : "nodemon ./5/dataManager.js",
-        "modulo" : "node ./1/main.js modulo",
-        "matrix" : "node ./1/main.js matrix",
-        "buddySystem" : "node ./3/buddySystem.js 20",
-        "cuaternarios": "python ./4/main.py",
+        "recurtion": "python ./4/recurtion.py",
         "dataManager" : "node ./5/dataManager.js"
     },
     "type": "module"
