@@ -106,7 +106,10 @@ process.stdin.on('data', data => {
             arrayOfTypes[arrayOfTypes.length-1] = arrayOfTypes[arrayOfTypes.length-1].trim()
             
             
-            const filteredName = arrayOfUnions.filter (union => union.name == name) 
+            let filteredName = arrayOfUnions.filter (union => union.name == name)
+            if (filteredName.length == 0) {
+                filteredName = arrayOfStructs.filter (struct => struct.name == name)
+            } 
             // Buscamos el nombre en los tipos, si existe no lo permitimos
             let flagTypeName = findOne([name],arrayOfAtomics)
             let flag = findOne(arrayOfTypes,arrayOfAtomics)
