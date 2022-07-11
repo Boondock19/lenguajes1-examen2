@@ -15,7 +15,7 @@ Los programas estan hechos en Javascript,python y Go por lo que para poder ejecu
 
 - `npm start` ejecutara el script para correr el programa de la pregunta 1b-1. En caso de querrer correr directamente el programa sin script se puede realizar con el comando ` go run ./1/churchNumbers.go`.
 
-- `npm run recurtion` ejecutara el script para correr el programa de la pregunta 4. En caso de querrer correr directamente el programa sin script se puede realizar con el comando `"python ./4/recurtion.py`.
+- `npm run recursion` ejecutara el script para correr el programa de la pregunta 4. En caso de querrer correr directamente el programa sin script se puede realizar con el comando `"python ./4/recursion.py`.
 
 - `npm run dataManager` ejecutara el script para correr el programa de la pregunta 5. En caso de querrer correr directamente el programa sin script se puede realizar con el comando `node ./5/dataManager.js`.
 

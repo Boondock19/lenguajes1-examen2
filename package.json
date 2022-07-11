@@ -2,7 +2,7 @@
     "scripts": {
         "start": " go run ./1/churchNumbers.go",
         "dev" : "nodemon ./5/dataManager.js",
-        "recurtion": "python ./4/recurtion.py",
+        "recursion": "python ./4/recursion.py",
         "dataManager" : "node ./5/dataManager.js"
     },
     "type": "module"
